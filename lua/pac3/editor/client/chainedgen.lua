@@ -20,11 +20,13 @@ local function calculatePoints()
 	local nodes = self.stacksize:GetValue()
 
 	local output = {}
+	local outputLinear = {}
 
 	for node = 1, nodes do
-		local raw = self.linear.calculate(node)
+		local raw = self.linear.calculate(node, outputLinear)
 
 		table.insert(output, raw)
+		table.insert(outputLinear, raw)
 	end
 
 	return output
@@ -154,14 +156,31 @@ function pace.OpenChainedMenu(parent)
 		list.affects_children = checkbox
 	end
 
-	self.linear.calculate = function(node)
+	self.linear.calculate = function(node, nodelist)
 		local x, y, z = self.linear.slider_x:GetValue(), self.linear.slider_y:GetValue(), self.linear.slider_z:GetValue()
 		local pitch, yaw, roll = self.linear.slider_pitch:GetValue(), self.linear.slider_yaw:GetValue(), self.linear.slider_roll:GetValue()
 
+		if not self.linear.affects_children:GetChecked() or #nodelist == 0 then
+			return {
+				x = x * node,
+				y = y * node,
+				z = z * node,
+
+				pitch = pitch * node,
+				yaw = yaw * node,
+				roll = roll * node,
+			}
+		end
+
+		local lastNode = nodelist[#nodelist]
+		local pos = Vector(x, y, z)
+		local ang = Angle(pitch * node, yaw * node, roll * node)
+		pos:Rotate(ang)
+
 		return {
-			x = x * node,
-			y = y * node,
-			z = z * node,
+			x = lastNode.x + pos.x,
+			y = lastNode.y + pos.y,
+			z = lastNode.z + pos.z,
 
 			pitch = pitch * node,
 			yaw = yaw * node,
