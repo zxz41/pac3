@@ -21,12 +21,24 @@ local function calculatePoints()
 
 	local output = {}
 	local outputLinear = {}
+	local outputProgressive = {}
 
 	for node = 1, nodes do
 		local raw = self.linear.calculate(node, outputLinear)
+		local raw2 = self.progressive.calculate(node, outputProgressive)
 
-		table.insert(output, raw)
+		table.insert(output, {
+			x = raw.x + raw2.x,
+			y = raw.y + raw2.y,
+			z = raw.z + raw2.z,
+
+			pitch = raw.pitch + raw2.pitch,
+			yaw = raw.yaw + raw2.yaw,
+			roll = raw.roll + raw2.roll,
+		})
+
 		table.insert(outputLinear, raw)
+		table.insert(outputProgressive, raw2)
 	end
 
 	return output
@@ -125,15 +137,11 @@ function pace.OpenChainedMenu(parent)
 
 	self.linear = vgui.Create('EditablePanel', self.lists)
 	self.progressive = vgui.Create('EditablePanel', self.lists)
-	self.pow = vgui.Create('EditablePanel', self.lists)
-	self.powProgressive = vgui.Create('EditablePanel', self.lists)
 
 	self.lists:AddSheet(L('linear'), self.linear)
 	self.lists:AddSheet(L('geometric'), self.progressive)
-	self.lists:AddSheet(L('power'), self.pow)
-	self.lists:AddSheet(L('power geometric'), self.powProgressive)
 
-	for i2, list in ipairs({self.linear, self.progressive, self.pow, self.powProgressive}) do
+	for i2, list in ipairs({self.linear, self.progressive}) do
 		for i, sliderData in ipairs(sliders) do
 			local id, default, name, min, max = sliderData[1], sliderData[2], sliderData[3], sliderData[4], sliderData[5]
 
@@ -174,6 +182,39 @@ function pace.OpenChainedMenu(parent)
 
 		local lastNode = nodelist[#nodelist]
 		local pos = Vector(x, y, z)
+		local ang = Angle(pitch * node, yaw * node, roll * node)
+		pos:Rotate(ang)
+
+		return {
+			x = lastNode.x + pos.x,
+			y = lastNode.y + pos.y,
+			z = lastNode.z + pos.z,
+
+			pitch = pitch * node,
+			yaw = yaw * node,
+			roll = roll * node,
+		}
+	end
+
+	self.progressive.calculate = function(node, nodelist)
+		local x, y, z = self.progressive.slider_x:GetValue(), self.progressive.slider_y:GetValue(), self.progressive.slider_z:GetValue()
+		local pitch, yaw, roll = self.progressive.slider_pitch:GetValue(), self.progressive.slider_yaw:GetValue(), self.progressive.slider_roll:GetValue()
+
+		if not self.progressive.affects_children:GetChecked() or #nodelist == 0 then
+			return {
+				x = x * node * node,
+				y = y * node * node,
+				z = z * node * node,
+
+				pitch = pitch * node,
+				yaw = yaw * node,
+				roll = roll * node,
+			}
+		end
+
+		local lastNode = nodelist[#nodelist]
+		local pow = math.pow(node - 1, 2)
+		local pos = Vector(x * pow, y * pow, z * pow)
 		local ang = Angle(pitch * node, yaw * node, roll * node)
 		pos:Rotate(ang)
 
