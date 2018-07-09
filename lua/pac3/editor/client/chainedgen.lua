@@ -71,10 +71,12 @@ function pace.OpenChainedMenu(parent)
 	self.inroot:SetText(L('put all parts in root of parent part'))
 	self.inroot:Dock(TOP)
 
-	self.parentToOriginal = vgui.Create('DCheckBoxLabel', self)
-	self.parentToOriginal:SetValue(true)
-	self.parentToOriginal:SetText(L('parent to original part'))
-	self.parentToOriginal:Dock(TOP)
+	do
+		local label = vgui.Create('DLabel', self)
+		label:SetText(L('Note: unchecking this option can produce very deep \nbut easier to move around part trees'))
+		label:SizeToContents()
+		label:Dock(TOP)
+	end
 
 	self.apply = vgui.Create('DButton', self)
 	self.apply:Dock(BOTTOM)
@@ -85,18 +87,13 @@ function pace.OpenChainedMenu(parent)
 	self.apply.DoClick = function()
 		local points = calculatePoints()
 		local inroot = self.inroot:GetChecked()
-		local parentToOriginal = self.parentToOriginal:GetChecked()
 		local partClone = parent:ToTable(true)
 		local currentRoot = parent:GetParent()
 
 		for i, node in ipairs(points) do
 			local newpart = pac.CreatePart(parent.ClassName, parent:GetPlayerOwner())
 			newpart:SetTable(partClone)
-			newpart:SetParent(currentRoot)
-
-			if i == 1 and parentToOriginal then
-				newpart:SetParent(parent)
-			end
+			newpart:SetParent(parent)
 
 			local origin = Vector(node.x, node.y, node.z)
 			local angles = Angle(node.pitch, node.yaw, node.roll)
