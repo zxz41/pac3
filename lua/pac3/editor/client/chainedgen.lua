@@ -142,6 +142,16 @@ function pace.OpenChainedMenu(parent)
 	self.lists:AddSheet(L('geometric'), self.progressive)
 
 	for i2, list in ipairs({self.linear, self.progressive}) do
+		list.resetall = vgui.Create('DButton', list)
+		list.resetall:SetText(L('reset all fields'))
+		list.resetall:Dock(TOP)
+		list.resetall.DoClick = function()
+			for i, sliderData in ipairs(sliders) do
+				local id, default = sliderData[1], sliderData[2]
+				list['slider_' .. id].SetValue(list['slider_' .. id], default)
+			end
+		end
+
 		for i, sliderData in ipairs(sliders) do
 			local id, default, name, min, max = sliderData[1], sliderData[2], sliderData[3], sliderData[4], sliderData[5]
 
