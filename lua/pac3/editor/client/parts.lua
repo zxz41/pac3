@@ -276,7 +276,7 @@ function pace.GetRegisteredParts()
 end
 
 do -- menu
-	function pace.AddRegisteredPartsToMenu(menu, parent)
+	function pace.AddRegisteredPartsToMenu(menu, parent, partMenu)
 		local partsToShow = {}
 		local clicked = false
 
@@ -370,8 +370,15 @@ do -- menu
 
 				local trap = false
 				table.sort(groupData.parts, function(a, b) return a.ClassName < b.ClassName end)
+
 				for i, part in ipairs(groupData.parts) do
 					add_part(sub, part)
+				end
+
+				if group == "model" then
+					sub:AddOption(L("chained generator"), function()
+						pace.OpenChainedMenu(partMenu)
+					end)
 				end
 
 				hook.Add('Think', sub, function()
@@ -557,7 +564,7 @@ do -- menu
 			menu:AddSpacer()
 		end
 
-		pace.AddRegisteredPartsToMenu(menu, not obj)
+		pace.AddRegisteredPartsToMenu(menu, not obj, obj)
 
 		menu:AddSpacer()
 
