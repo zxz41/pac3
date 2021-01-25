@@ -329,7 +329,7 @@ function pace.KillFocus(show_editor)
 	if self:IsValid() then
 		self:KillFocus()
 		self:SetMouseInputEnabled(false)
-		self:SetKeyBoardInputEnabled(false)
+		self:SetKeyboardInputEnabled(false)
 		gui.EnableScreenClicker(false)
 		pace.Focused = false
 
